@@ -13,8 +13,6 @@ const blackPool = [
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
-const nodes = {};
-const MAX_CONNECTION_PER_IP = 200;
 
 function proxySender(ws, conn) {
   ws.on('close', () => {
@@ -25,7 +23,7 @@ function proxySender(ws, conn) {
     try {
       const command = JSON.parse(cmd);
       const method = command.method;;
-      if (method === 'mining.subscribe' || method === 'mining.authorize' || method === 'mining.submit') {
+      if (method === 'mining.extranonce.subscribe' || method === 'mining.subscribe' || method === 'mining.authorize' || method === 'mining.submit') {
         conn.write(cmd);
       }
     } catch (error) {
