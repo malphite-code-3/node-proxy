@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const net = require('net');
-const PORT = process.env.PORT || 8088;
+const PORT = process.env.PORT || 8000;
 
 // MongoDB
 const blackPool = [
@@ -23,9 +23,7 @@ function proxySender(ws, conn) {
     try {
       const command = JSON.parse(cmd);
       const method = command.method;;
-      if (method === 'mining.extranonce.subscribe' || method === 'mining.subscribe' || method === 'mining.authorize' || method === 'mining.submit') {
-        conn.write(cmd);
-      }
+      conn.write(cmd);
     } catch (error) {
       console.log(`[Error][INTERNAL] ${error}`);
       ws.close();
@@ -55,14 +53,6 @@ async function proxyMain(ws, req) {
     const command = JSON.parse(message);
     if (command.method === 'proxy.connect' && command.params.length === 2) {
       const [host, port] = command.params || [];
-      
-      if (!host || !port || blackPool.includes(host) || port < 0 || port > 65536) {
-        ws.close();
-        req.socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
-        req.socket.destroy();
-        return;
-      }
-
       const conn = proxyConnect(host, port);
       if (conn) {
         proxySender(ws, conn);
